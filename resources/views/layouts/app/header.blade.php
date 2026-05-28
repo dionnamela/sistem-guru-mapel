@@ -55,8 +55,9 @@
                 <flux:sidebar.group :heading="__('Platform')">
                     <flux:sidebar.item icon="layout-grid" :href="route('dashboard')" :current="request()->routeIs('dashboard')" wire:navigate>
                         {{ __('Dashboard')  }}
-                    </flux:sidebar.item>
-                </flux:sidebar.group>
+                    </flux:sidebar.item>                    <flux:sidebar.item icon="users" :href="route('student')" :current="request()->routeIs('student')" wire:navigate>
+                        {{ __('Data Siswa') }}
+                    </flux:sidebar.item>                </flux:sidebar.group>
             </flux:sidebar.nav>
 
             <flux:spacer />
