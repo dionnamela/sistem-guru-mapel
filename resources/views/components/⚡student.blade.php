@@ -14,13 +14,13 @@ new class extends Component {
     public string $nama = '';
     public string $nisn = '';
     public string $rombel = '';
-    public string $jenis_kelamin = 'Laki-laki';
+    public string $jenis_kelamin = 'L';
 
     protected array $rules = [
         'nama' => 'required|string|max:255',
         'nisn' => 'required|string|max:20|unique:students,nisn',
         'rombel' => 'required|string|max:255',
-        'jenis_kelamin' => 'required|in:Laki-laki,Perempuan',
+        'jenis_kelamin' => 'required|in:L,P',
     ];
 
     public function mount()
@@ -34,7 +34,7 @@ new class extends Component {
         $this->nama = '';
         $this->nisn = '';
         $this->rombel = '';
-        $this->jenis_kelamin = 'Laki-laki';
+        $this->jenis_kelamin = 'L';
         $this->showCreateModal = true;
     }
 
@@ -115,7 +115,7 @@ new class extends Component {
             'nama' => 'required|string|max:255',
             'nisn' => 'required|string|max:20|unique:students,nisn,' . $this->editingStudentId,
             'rombel' => 'required|string|max:255',
-            'jenis_kelamin' => 'required|in:Laki-laki,Perempuan',
+            'jenis_kelamin' => 'required|in:L,P',
         ]);
 
         Students::findOrFail($this->editingStudentId)->update([
@@ -299,8 +299,8 @@ new class extends Component {
                     <select
                         wire:model.defer="jenis_kelamin"
                         class="w-full rounded-xl border border-zinc-700 bg-zinc-950 px-3 py-2 text-white focus:border-indigo-500 focus:outline-none">
-                        <option value="Laki-laki">Laki-laki</option>
-                        <option value="Perempuan">Perempuan</option>
+                        <option value="L">L</option>
+                        <option value="P">P</option>
                     </select>
                     @error('jenis_kelamin')
                     <div class="text-sm text-red-500">{{ $message }}</div>
@@ -354,8 +354,8 @@ new class extends Component {
                     <select
                         wire:model.defer="jenis_kelamin"
                         class="w-full rounded-xl border border-zinc-700 bg-zinc-950 px-3 py-2 text-white focus:border-indigo-500 focus:outline-none">
-                        <option value="Laki-laki">Laki-laki</option>
-                        <option value="Perempuan">Perempuan</option>
+                        <option value="L">L</option>
+                        <option value="P">P</option>
                     </select>
                     @error('jenis_kelamin')
                     <div class="text-sm text-red-500">{{ $message }}</div>
