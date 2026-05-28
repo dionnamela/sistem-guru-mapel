@@ -18,6 +18,12 @@
                     <flux:sidebar.item icon="users" :href="route('student')" :current="request()->routeIs('student')" wire:navigate>
                         {{ __('Data Siswa') }}
                     </flux:sidebar.item>
+                    <flux:sidebar.item icon="users" :href="route('attendance')" :current="request()->routeIs('attendance')" wire:navigate>
+                        {{ __('Absen') }}
+                    </flux:sidebar.item>
+                    <flux:sidebar.item icon="book-open-text" :href="route('attendance.recap')" :current="request()->routeIs('attendance.recap')" wire:navigate>
+                        {{ __('Rekap Absen') }}
+                    </flux:sidebar.item>
                 </flux:sidebar.group>
             </flux:sidebar.nav>
 
