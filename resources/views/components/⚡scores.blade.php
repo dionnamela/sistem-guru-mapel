@@ -3,6 +3,8 @@
 use Flux\Flux;
 use Livewire\Component;
 use App\Models\Students;
+use App\Models\Mapel;
+use App\Models\Rombel;
 use App\Models\Score;
 use App\Models\AttendanceStudent;
 
@@ -10,23 +12,24 @@ new class extends Component
 {
     public string $selectedRombel = '';
 
-    public string $mata_pelajaran = '';
+    public string $selectedMapel = '';
+
+    public $mapelOptions = [];
+
+    public $rombelOptions = [];
 
     public $students = [];
 
     public array $scores = [];
 
-    public array $rombelOptions = [
-        '7 Efesus',
-        '7 Kolose',
-        '7 Filipi',
-        '8 Filemon',
-        '8 Smirna',
-        '8 Roma',
-        '9 Tesalonika',
-        '9 Korintus',
-        '9 Tiatira',
-    ];
+    public function mount()
+    {
+        $this->mapelOptions = Mapel::orderBy('nama')
+            ->get();
+
+        $this->rombelOptions = Rombel::orderBy('nama')
+            ->get();
+    }
 
     public function updatedSelectedRombel()
     {
@@ -54,6 +57,22 @@ new class extends Component
 
             $nilai = $this->scores[$student->id];
 
+            $totalPertemuan = AttendanceStudent::where(
+                'student_id',
+                $student->id
+            )->count();
+
+            $totalHadir = AttendanceStudent::where(
+                'student_id',
+                $student->id
+            )
+                ->where('status', 'Hadir')
+                ->count();
+
+            $nilaiAbsen = $totalPertemuan > 0
+                ? round(($totalHadir / $totalPertemuan) * 100)
+                : 0;
+
             $rataRata = round(
                 (
                     (int) ($nilai['tugas'] ?? 0) +
@@ -63,33 +82,38 @@ new class extends Component
 
             $nilaiAkhir = round(
                 (
-                    ($nilai['tugas'] * 0.20) +
-                    ($nilai['uh'] * 0.25) +
-                    ($nilai['mid'] * 0.25) +
-                    ($nilai['uas'] * 0.20) +
+                    ((int) $nilai['tugas'] * 0.20) +
+                    ((int) $nilai['uh'] * 0.25) +
+                    ((int) $nilai['mid'] * 0.25) +
+                    ((int) $nilai['uas'] * 0.20) +
                     ($nilaiAbsen * 0.10)
                 )
             );
 
-            $totalPertemuan = AttendanceStudent::where('student_id', $student->id)
-                ->count();
+            Score::updateOrCreate(
 
-            $totalHadir = AttendanceStudent::where('student_id', $student->id)
-                ->where('status', 'Hadir')
-                ->count();
+                [
+                    'student_id' => $student->id,
+                    'mata_pelajaran' => $this->selectedMapel,
+                ],
 
-            $nilaiAbsen = $totalPertemuan > 0
-                ? round(($totalHadir / $totalPertemuan) * 100)
-                : 0;
+                [
+                    'rombel' => $student->rombel,
 
-            $nilaiAkhir = round(
-                (
-                    ($nilai['tugas'] * 0.20) +
-                    ($nilai['uh'] * 0.25) +
-                    ($nilai['mid'] * 0.25) +
-                    ($nilai['uas'] * 0.20) +
-                    ($nilaiAbsen * 0.10)
-                )
+                    'nilai_tugas' => $nilai['tugas'],
+
+                    'nilai_uh' => $nilai['uh'],
+
+                    'nilai_mid' => $nilai['mid'],
+
+                    'nilai_uas' => $nilai['uas'],
+
+                    'nilai_absen' => $nilaiAbsen,
+
+                    'rata_rata' => $rataRata,
+
+                    'nilai_akhir' => $nilaiAkhir,
+                ]
             );
         }
 
@@ -137,8 +161,8 @@ new class extends Component
                     </option>
 
                     @foreach ($rombelOptions as $rombel)
-                    <option value="{{ $rombel }}">
-                        {{ $rombel }}
+                    <option value="{{ $rombel->nama }}">
+                        {{ $rombel->nama }}
                     </option>
                     @endforeach
 
@@ -148,19 +172,34 @@ new class extends Component
 
             {{-- Mata Pelajaran --}}
             <div>
-
-                <label class="mb-2 block text-sm font-medium text-zinc-300">
+                <label class="mb-2 block text-sm font-semibold text-zinc-300">
                     Mata Pelajaran
                 </label>
 
-                <input
-                    type="text"
-                    wire:model="mata_pelajaran"
-                    placeholder="Contoh: Informatika"
-                    class="w-full rounded-2xl border border-zinc-700 bg-zinc-950 px-4 py-3 text-white">
+                <div class="relative">
 
+                    <select
+                        wire:model.live="selectedMapel"
+                        class="w-full appearance-none rounded-2xl border border-zinc-700 bg-zinc-950 px-4 py-3 pr-12 text-white shadow-lg transition duration-200 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/30">
+
+                        <option value="">
+                            Pilih Mata Pelajaran
+                        </option>
+
+                        @foreach ($mapelOptions as $mapel)
+                        <option value="{{ $mapel->nama }}">
+                            {{ $mapel->nama }}
+                        </option>
+                        @endforeach
+
+                    </select>
+
+                    {{-- Icon --}}
+                    <div class="pointer-events-none absolute inset-y-0 right-4 flex items-center text-zinc-400">
+                    </div>
+
+                </div>
             </div>
-
         </div>
 
     </div>

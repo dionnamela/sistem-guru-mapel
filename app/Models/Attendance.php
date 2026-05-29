@@ -10,6 +10,7 @@ class Attendance extends Model
 
     protected $fillable = [
         'rombel',
+        'mapel',
         'teacher_name',
         'tanggal',
     ];

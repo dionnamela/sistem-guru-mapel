@@ -6,12 +6,15 @@ use App\Models\Attendance;
 use App\Models\AttendanceStudent;
 use App\Models\Students;
 use App\Models\Rombel;
+use App\Models\Mapel;
 use Carbon\Carbon;
 
 new class extends Component {
     public $students = [];
     public string $selectedRombel = '';
     public $rombelOptions = [];
+    public $mapelOptions = [];
+    public string $selectedMapel = '';
     public string $teacher_name = '';
     public string $tanggal = '';
     public array $attendance = [];
@@ -19,6 +22,7 @@ new class extends Component {
 
     protected array $rules = [
         'selectedRombel' => 'required|string|max:255',
+        'selectedMapel' => 'required|string|max:255',
         'teacher_name' => 'required|string|max:255',
         'tanggal' => 'required|date',
         'attendance' => 'required|array',
@@ -33,11 +37,19 @@ new class extends Component {
             : '';
 
         $this->loadRombelOptions();
+        $this->loadMapelOptions();
     }
 
     private function loadRombelOptions(): void
     {
         $this->rombelOptions = Rombel::orderBy('nama')
+            ->pluck('nama')
+            ->toArray();
+    }
+
+    private function loadMapelOptions(): void
+    {
+        $this->mapelOptions = Mapel::orderBy('nama')
             ->pluck('nama')
             ->toArray();
     }
@@ -79,10 +91,10 @@ new class extends Component {
 
         $attendance = Attendance::create([
             'rombel' => $validated['selectedRombel'],
+            'mapel' => $validated['selectedMapel'],
             'teacher_name' => $validated['teacher_name'],
             'tanggal' => $validated['tanggal'],
         ]);
-
         foreach ($this->students as $student) {
             $row = $this->attendance[$student->id] ?? ['status' => 'Hadir', 'keterangan' => ''];
 
@@ -95,9 +107,12 @@ new class extends Component {
         }
 
         $this->selectedRombel = '';
+        $this->selectedMapel = '';
         $this->students = [];
         $this->attendance = [];
+
         $this->loadRombelOptions();
+        $this->loadMapelOptions();
         $this->tanggal = Carbon::now()->format('Y-m-d');
 
         Flux::toast(variant: 'success', text: 'Absensi berhasil disimpan.');
@@ -125,7 +140,7 @@ new class extends Component {
         </button>
     </div>
 
-    <div class="grid gap-4 md:grid-cols-3 mb-6">
+    <div class="grid gap-4 md:grid-cols-4 mb-6">
         <div>
             <label class="block text-sm font-medium text-zinc-300">Rombel</label>
             <select
@@ -138,7 +153,27 @@ new class extends Component {
                 @endforeach
             </select>
         </div>
+        <div>
+            <label class="block text-sm font-medium text-zinc-300">
+                Mata Pelajaran
+            </label>
 
+            <select
+                wire:model="selectedMapel"
+                class="w-full rounded-xl border border-zinc-700 bg-zinc-950 px-3 py-2 text-white focus:border-indigo-500 focus:outline-none">
+
+                <option value="">
+                    Pilih Mata Pelajaran
+                </option>
+
+                @foreach ($mapelOptions as $mapelOption)
+                <option value="{{ $mapelOption }}">
+                    {{ $mapelOption }}
+                </option>
+                @endforeach
+
+            </select>
+        </div>
         <div>
             <label class="block text-sm font-medium text-zinc-300">Nama Guru</label>
             <input

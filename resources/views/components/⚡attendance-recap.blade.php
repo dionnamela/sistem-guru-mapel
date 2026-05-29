@@ -5,21 +5,13 @@ use Livewire\Component;
 use App\Models\Attendance;
 use App\Models\AttendanceStudent;
 use App\Models\Students;
+use App\Models\Mapel;
+use App\Models\Rombel;
 
 new class extends Component {
     public string $selectedRombel = '';
     public string $selectedMonthYear = '';
-    public array $rombelOptions = [
-        '7 Efesus',
-        '7 Kolose',
-        '7 Filipi',
-        '8 Filemon',
-        '8 Smirna',
-        '8 Roma',
-        '9 Tesalonika',
-        '9 Korintus',
-        '9 Tiatira',
-    ];
+    public $rombelOptions = [];
     public array $monthOptions = [];
     public array $records = [];
     public array $statusSummary = [];
@@ -28,8 +20,14 @@ new class extends Component {
 
     public function mount(): void
     {
+        $this->loadRombelOptions();
         $this->loadMonthOptions();
         $this->loadRecords();
+    }
+    private function loadRombelOptions(): void
+    {
+        $this->rombelOptions = Rombel::orderBy('nama')
+            ->get();
     }
 
     public function updatedSelectedRombel(): void
@@ -182,11 +180,13 @@ new class extends Component {
                         wire:change="loadRecords"
                         class="w-full rounded-xl border border-zinc-700 bg-zinc-900 px-4 py-3 text-white transition focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20">
 
-                        <option value="">Pilih Rombel</option>
+                        <option value="">
+                            Pilih Rombel
+                        </option>
 
-                        @foreach ($rombelOptions as $rombelOption)
-                        <option value="{{ $rombelOption }}">
-                            {{ $rombelOption }}
+                        @foreach ($rombelOptions as $rombel)
+                        <option value="{{ $rombel->nama }}">
+                            {{ $rombel->nama }}
                         </option>
                         @endforeach
                     </select>
