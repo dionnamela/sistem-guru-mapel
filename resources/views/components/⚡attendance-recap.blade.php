@@ -76,10 +76,12 @@ new class extends Component {
 
         $this->records = $records->toArray();
         $this->statusSummary = AttendanceStudent::selectRaw('status, count(*) as total')
-            ->whereHas('attendance', fn ($query) => $query
-                ->where('rombel', $this->selectedRombel)
-                ->whereYear('tanggal', $year)
-                ->whereMonth('tanggal', $month)
+            ->whereHas(
+                'attendance',
+                fn($query) => $query
+                    ->where('rombel', $this->selectedRombel)
+                    ->whereYear('tanggal', $year)
+                    ->whereMonth('tanggal', $month)
             )
             ->groupBy('status')
             ->pluck('total', 'status')
@@ -137,48 +139,128 @@ new class extends Component {
         </div>
     </div>
 
-    <div class="grid gap-4 md:grid-cols-3 mb-6">
-        <div>
-            <label class="block text-sm font-medium text-zinc-300">Rombel</label>
-            <select
-                wire:model="selectedRombel"
-                wire:change="loadRecords"
-                class="w-full rounded-xl border border-zinc-700 bg-zinc-950 px-3 py-2 text-white focus:border-indigo-500 focus:outline-none">
-                <option value="">Pilih Rombel</option>
-                @foreach ($rombelOptions as $rombelOption)
-                    <option value="{{ $rombelOption }}">{{ $rombelOption }}</option>
-                @endforeach
-            </select>
-        </div>
+    <div class="grid gap-6 lg:grid-cols-3 mb-8">
 
-        <div>
-            <label class="block text-sm font-medium text-zinc-300">Bulan</label>
-            <select
-                wire:model="selectedMonthYear"
-                wire:change="loadRecords"
-                class="w-full rounded-xl border border-zinc-700 bg-zinc-950 px-3 py-2 text-white focus:border-indigo-500 focus:outline-none">
-                <option value="">Pilih Bulan</option>
-                @foreach ($monthOptions as $monthOption)
-                    <option value="{{ $monthOption }}">{{ $monthOption }}</option>
-                @endforeach
-            </select>
-        </div>
-
-        <div class="md:col-span-1">
-            <div class="grid gap-3 sm:grid-cols-3">
-                <div class="rounded-2xl border border-zinc-800 bg-zinc-950 px-4 py-4">
-                    <div class="text-sm text-zinc-400">Total Sesi</div>
-                    <div class="mt-2 text-2xl font-semibold text-white">{{ count($records) }}</div>
-                </div>
-                <div class="rounded-2xl border border-zinc-800 bg-zinc-950 px-4 py-4">
-                    <div class="text-sm text-zinc-400">Hadir</div>
-                    <div class="mt-2 text-2xl font-semibold text-white">{{ $statusSummary['Hadir'] ?? 0 }}</div>
-                </div>
-                <div class="rounded-2xl border border-zinc-800 bg-zinc-950 px-4 py-4">
-                    <div class="text-sm text-zinc-400">Izin / Alpha</div>
-                    <div class="mt-2 text-2xl font-semibold text-white">{{ ($statusSummary['Izin'] ?? 0) + ($statusSummary['Alpha'] ?? 0) }}</div>
+        {{-- Filter Card --}}
+        <div class="lg:col-span-2 rounded-2xl border border-zinc-800 bg-zinc-950 p-5">
+            <div class="flex items-center justify-between mb-5">
+                <div>
+                    <h2 class="text-lg font-semibold text-white">
+                        Filter Rekap
+                    </h2>
+                    <p class="text-sm text-zinc-400">
+                        Pilih rombel dan bulan untuk melihat data absensi.
+                    </p>
                 </div>
             </div>
+
+            <div class="grid gap-4 md:grid-cols-2">
+
+                {{-- Rombel --}}
+                <div>
+                    <label class="mb-2 block text-sm font-medium text-zinc-300">
+                        Rombel
+                    </label>
+
+                    <select
+                        wire:model="selectedRombel"
+                        wire:change="loadRecords"
+                        class="w-full rounded-xl border border-zinc-700 bg-zinc-900 px-4 py-3 text-white transition focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20">
+
+                        <option value="">Pilih Rombel</option>
+
+                        @foreach ($rombelOptions as $rombelOption)
+                        <option value="{{ $rombelOption }}">
+                            {{ $rombelOption }}
+                        </option>
+                        @endforeach
+                    </select>
+                </div>
+
+                {{-- Bulan --}}
+                <div>
+                    <label class="mb-2 block text-sm font-medium text-zinc-300">
+                        Bulan
+                    </label>
+
+                    <select
+                        wire:model="selectedMonthYear"
+                        wire:change="loadRecords"
+                        class="w-full rounded-xl border border-zinc-700 bg-zinc-900 px-4 py-3 text-white transition focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20">
+
+                        <option value="">Pilih Bulan</option>
+
+                        @foreach ($monthOptions as $monthOption)
+                        <option value="{{ $monthOption }}">
+                            {{ $monthOption }}
+                        </option>
+                        @endforeach
+                    </select>
+                </div>
+
+            </div>
+        </div>
+
+        {{-- Statistik --}}
+        <div class="grid gap-4 sm:grid-cols-3 lg:grid-cols-1">
+
+            {{-- Total Sesi --}}
+            <div class="rounded-2xl border border-zinc-800 bg-gradient-to-br from-zinc-900 to-zinc-950 p-5 shadow-lg">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm text-zinc-400">
+                            Total Sesi
+                        </p>
+
+                        <h3 class="mt-2 text-3xl font-bold text-white">
+                            {{ count($records) }}
+                        </h3>
+                    </div>
+
+                    <div class="rounded-xl bg-indigo-500/10 p-3 text-indigo-400">
+                        📅
+                    </div>
+                </div>
+            </div>
+
+            {{-- Hadir --}}
+            <div class="rounded-2xl border border-zinc-800 bg-gradient-to-br from-zinc-900 to-zinc-950 p-5 shadow-lg">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm text-zinc-400">
+                            Hadir
+                        </p>
+
+                        <h3 class="mt-2 text-3xl font-bold text-green-400">
+                            {{ $statusSummary['Hadir'] ?? 0 }}
+                        </h3>
+                    </div>
+
+                    <div class="rounded-xl bg-green-500/10 p-3 text-green-400">
+                        ✅
+                    </div>
+                </div>
+            </div>
+
+            {{-- Tidak Hadir --}}
+            <div class="rounded-2xl border border-zinc-800 bg-gradient-to-br from-zinc-900 to-zinc-950 p-5 shadow-lg">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm text-zinc-400">
+                            Izin / Alpha
+                        </p>
+
+                        <h3 class="mt-2 text-3xl font-bold text-red-400">
+                            {{ ($statusSummary['Izin'] ?? 0) + ($statusSummary['Alpha'] ?? 0) }}
+                        </h3>
+                    </div>
+
+                    <div class="rounded-xl bg-red-500/10 p-3 text-red-400">
+                        ⚠️
+                    </div>
+                </div>
+            </div>
+
         </div>
     </div>
 
@@ -194,36 +276,37 @@ new class extends Component {
             </thead>
             <tbody class="divide-y divide-zinc-800">
                 @if ($selectedRombel === '')
-                    <tr>
-                        <td colspan="4" class="px-5 py-10 text-center text-zinc-400">
-                            Pilih rombel untuk menampilkan rekap absen.
-                        </td>
-                    </tr>
+                <tr>
+                    <td colspan="4" class="px-5 py-10 text-center text-zinc-400">
+                        Pilih rombel untuk menampilkan rekap absen.
+                    </td>
+                </tr>
                 @elseif (count($records) === 0)
-                    <tr>
-                        <td colspan="4" class="px-5 py-10 text-center text-zinc-400">
-                            Belum ada rekap absensi untuk rombel ini.
-                        </td>
-                    </tr>
+                <tr>
+                    <td colspan="4" class="px-5 py-10 text-center text-zinc-400">
+                        Belum ada rekap absensi untuk rombel ini.
+                    </td>
+                </tr>
                 @else
-                    @foreach ($records as $record)
-                        <tr class="hover:bg-zinc-800/60 transition duration-200">
-                            <td class="px-5 py-4 text-zinc-300">{{ $record['tanggal'] }}</td>
-                            <td class="px-5 py-4 text-zinc-300">{{ $record['teacher_name'] }}</td>
-                            <td class="px-5 py-4 text-zinc-300">{{ count($record['students']) }}</td>
-                            <td class="px-5 py-4 text-zinc-300">
-                                @php
-                                    $counts = ['Hadir' => 0, 'Izin' => 0, 'Alpha' => 0];
-                                    foreach ($record['students'] as $studentRow) {
-                                        $counts[$studentRow['status']] = ($counts[$studentRow['status']] ?? 0) + 1;
-                                    }
-                                @endphp
-                                Hadir: {{ $counts['Hadir'] ?? 0 }},
-                                Izin: {{ $counts['Izin'] ?? 0 }},
-                                Alpha: {{ $counts['Alpha'] ?? 0 }}
-                            </td>
-                        </tr>
-                    @endforeach
+                @foreach ($records as $record)
+                <tr class="hover:bg-zinc-800/60 transition duration-200">
+                    <td class="px-5 py-4 text-zinc-300">{{ $record['tanggal'] }}</td>
+                    <td class="px-5 py-4 text-zinc-300">{{ $record['teacher_name'] }}</td>
+                    <td class="px-5 py-4 text-zinc-300">{{ count($record['students']) }}</td>
+                    <td class="px-5 py-4 text-zinc-300">
+                        @php
+                        $counts = ['Hadir' => 0, 'Izin' => 0, 'Alpha' => 0];
+                        foreach ($record['students'] as $studentRow) {
+                        $counts[$studentRow['status']] = ($counts[$studentRow['status']] ?? 0) + 1;
+                        }
+                        @endphp
+                        Hadir: {{ $counts['Hadir'] ?? 0 }},
+                        Izin: {{ $counts['Izin'] ?? 0 }},
+                        Sakit: {{ $counts['Sakit'] ?? 0 }},
+                        Alpha: {{ $counts['Alpha'] ?? 0 }}
+                    </td>
+                </tr>
+                @endforeach
                 @endif
             </tbody>
         </table>
@@ -248,36 +331,85 @@ new class extends Component {
                         <th class="px-5 py-4 text-left text-sm font-semibold">Izin</th>
                         <th class="px-5 py-4 text-left text-sm font-semibold">Sakit</th>
                         <th class="px-5 py-4 text-left text-sm font-semibold">Alpha</th>
+                        <th class="px-5 py-4 text-left text-sm font-semibold">
+                            Nilai Kehadiran
+                        </th>
                     </tr>
                 </thead>
+
                 <tbody class="divide-y divide-zinc-800">
                     @if ($selectedRombel === '' || $selectedMonthYear === '')
-                        <tr>
-                            <td colspan="6" class="px-5 py-10 text-center text-zinc-400">
-                                Pilih rombel dan bulan untuk melihat rekap siswa.
-                            </td>
-                        </tr>
+                    <tr>
+                        <td colspan="8" class="px-5 py-10 text-center text-zinc-400">
+                            Pilih rombel dan bulan untuk melihat rekap siswa.
+                        </td>
+                    </tr>
                     @elseif (count($students) === 0)
-                        <tr>
-                            <td colspan="6" class="px-5 py-10 text-center text-zinc-400">
-                                Tidak ada siswa di rombel ini.
-                            </td>
-                        </tr>
+                    <tr>
+                        <td colspan="8" class="px-5 py-10 text-center text-zinc-400">
+                            Tidak ada siswa di rombel ini.
+                        </td>
+                    </tr>
                     @else
-                        @foreach ($students as $index => $student)
-                            @php
-                                $summary = $studentSummaries[$student['id']] ?? ['hadir' => 0, 'izin' => 0, 'sakit' => 0, 'alpha' => 0, 'total' => 0];
-                            @endphp
-                            <tr class="hover:bg-zinc-800/60 transition duration-200">
-                                <td class="px-5 py-4 text-zinc-300">{{ $index + 1 }}</td>
-                                <td class="px-5 py-4 text-zinc-300">{{ $student['nama'] }}</td>
-                                <td class="px-5 py-4 text-zinc-300">{{ $summary['total'] }}</td>
-                                <td class="px-5 py-4 text-zinc-300">{{ $summary['hadir'] }}</td>
-                                <td class="px-5 py-4 text-zinc-300">{{ $summary['izin'] }}</td>
-                                <td class="px-5 py-4 text-zinc-300">{{ $summary['sakit'] }}</td>
-                                <td class="px-5 py-4 text-zinc-300">{{ $summary['alpha'] }}</td>
-                            </tr>
-                        @endforeach
+                    @foreach ($students as $index => $student)
+                    @php
+                    $summary = $studentSummaries[$student['id']] ?? [
+                    'hadir' => 0,
+                    'izin' => 0,
+                    'sakit' => 0,
+                    'alpha' => 0,
+                    'total' => 0,
+                    ];
+
+                    $nilaiKehadiran = $summary['total'] > 0
+                    ? round(($summary['hadir'] / $summary['total']) * 100)
+                    : 0;
+                    @endphp
+
+                    <tr class="hover:bg-zinc-800/60 transition duration-200">
+                        <td class="px-5 py-4 text-zinc-300">
+                            {{ $index + 1 }}
+                        </td>
+
+                        <td class="px-5 py-4 text-zinc-300">
+                            {{ $student['nama'] }}
+                        </td>
+
+                        <td class="px-5 py-4 text-zinc-300">
+                            {{ $summary['total'] }}
+                        </td>
+
+                        <td class="px-5 py-4 text-zinc-300">
+                            {{ $summary['hadir'] }}
+                        </td>
+
+                        <td class="px-5 py-4 text-zinc-300">
+                            {{ $summary['izin'] }}
+                        </td>
+
+                        <td class="px-5 py-4 text-zinc-300">
+                            {{ $summary['sakit'] }}
+                        </td>
+
+                        <td class="px-5 py-4 text-zinc-300">
+                            {{ $summary['alpha'] }}
+                        </td>
+
+                        <td class="px-5 py-4">
+                            <span class="
+                                px-3 py-1 rounded-full text-sm font-semibold
+
+                                {{ $nilaiKehadiran >= 90 ? 'bg-green-500/20 text-green-400' : '' }}
+
+                                {{ $nilaiKehadiran >= 75 && $nilaiKehadiran < 90 ? 'bg-yellow-500/20 text-yellow-400' : '' }}
+
+                                {{ $nilaiKehadiran < 75 ? 'bg-red-500/20 text-red-400' : '' }}
+                            ">
+                                {{ $nilaiKehadiran }}%
+                            </span>
+                        </td>
+                    </tr>
+                    @endforeach
                     @endif
                 </tbody>
             </table>

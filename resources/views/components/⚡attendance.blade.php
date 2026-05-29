@@ -24,7 +24,7 @@ new class extends Component {
     public string $teacher_name = '';
     public string $tanggal = '';
     public array $attendance = [];
-    public array $statusOptions = ['Hadir', 'Izin', 'Alpha'];
+    public array $statusOptions = ['Hadir', 'Izin', 'Alpha', 'Sakit'];
 
     protected array $rules = [
         'selectedRombel' => 'required|string|max:255',
@@ -36,7 +36,7 @@ new class extends Component {
     public function mount(): void
     {
         $this->tanggal = Carbon::now()->format('Y-m-d');
-        $this->teacher_name = auth()->user()? auth()->user()->name : '';
+        $this->teacher_name = auth()->user() ? auth()->user()->name : '';
     }
 
     private function loadRombelOptions(): void
@@ -147,7 +147,7 @@ new class extends Component {
                 class="w-full rounded-xl border border-zinc-700 bg-zinc-950 px-3 py-2 text-white focus:border-indigo-500 focus:outline-none">
                 <option value="">Pilih Rombel</option>
                 @foreach ($rombelOptions as $rombelOption)
-                    <option value="{{ $rombelOption }}">{{ $rombelOption }}</option>
+                <option value="{{ $rombelOption }}">{{ $rombelOption }}</option>
                 @endforeach
             </select>
         </div>
@@ -183,37 +183,37 @@ new class extends Component {
             </thead>
             <tbody class="divide-y divide-zinc-800">
                 @if (count($students) === 0)
-                    <tr>
-                        <td colspan="5" class="px-5 py-10 text-center text-zinc-400">
-                            Pilih rombel untuk menampilkan siswa.
-                        </td>
-                    </tr>
+                <tr>
+                    <td colspan="5" class="px-5 py-10 text-center text-zinc-400">
+                        Pilih rombel untuk menampilkan siswa.
+                    </td>
+                </tr>
                 @else
-                    @foreach ($students as $index => $student)
-                        <tr class="hover:bg-zinc-800/60 transition duration-200">
-                            <td class="px-5 py-4 text-zinc-300">{{ $index + 1 }}</td>
-                            <td class="px-5 py-4">
-                                <div class="font-semibold text-white">{{ $student->nama }}</div>
-                            </td>
-                            <td class="px-5 py-4 text-zinc-300">{{ $student->nisn }}</td>
-                            <td class="px-5 py-4">
-                                <select
-                                    wire:model.defer="attendance.{{ $student->id }}.status"
-                                    class="w-full rounded-xl border border-zinc-700 bg-zinc-950 px-3 py-2 text-white focus:border-indigo-500 focus:outline-none">
-                                    @foreach ($statusOptions as $status)
-                                        <option value="{{ $status }}">{{ $status }}</option>
-                                    @endforeach
-                                </select>
-                            </td>
-                            <td class="px-5 py-4">
-                                <input
-                                    type="text"
-                                    wire:model.defer="attendance.{{ $student->id }}.keterangan"
-                                    class="w-full rounded-xl border border-zinc-700 bg-zinc-950 px-3 py-2 text-white focus:border-indigo-500 focus:outline-none"
-                                    placeholder="Keterangan (misalnya izin)" />
-                            </td>
-                        </tr>
-                    @endforeach
+                @foreach ($students as $index => $student)
+                <tr class="hover:bg-zinc-800/60 transition duration-200">
+                    <td class="px-5 py-4 text-zinc-300">{{ $index + 1 }}</td>
+                    <td class="px-5 py-4">
+                        <div class="font-semibold text-white">{{ $student->nama }}</div>
+                    </td>
+                    <td class="px-5 py-4 text-zinc-300">{{ $student->nisn }}</td>
+                    <td class="px-5 py-4">
+                        <select
+                            wire:model.defer="attendance.{{ $student->id }}.status"
+                            class="w-full rounded-xl border border-zinc-700 bg-zinc-950 px-3 py-2 text-white focus:border-indigo-500 focus:outline-none">
+                            @foreach ($statusOptions as $status)
+                            <option value="{{ $status }}">{{ $status }}</option>
+                            @endforeach
+                        </select>
+                    </td>
+                    <td class="px-5 py-4">
+                        <input
+                            type="text"
+                            wire:model.defer="attendance.{{ $student->id }}.keterangan"
+                            class="w-full rounded-xl border border-zinc-700 bg-zinc-950 px-3 py-2 text-white focus:border-indigo-500 focus:outline-none"
+                            placeholder="Keterangan (misalnya izin)" />
+                    </td>
+                </tr>
+                @endforeach
                 @endif
             </tbody>
         </table>
