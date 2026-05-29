@@ -4,6 +4,7 @@ use Flux\Flux;
 use Livewire\Component;
 use App\Models\Students;
 use App\Models\Score;
+use App\Models\AttendanceStudent;
 
 new class extends Component
 {
@@ -62,34 +63,33 @@ new class extends Component
 
             $nilaiAkhir = round(
                 (
-                    $rataRata +
-                    (int) ($nilai['mid'] ?? 0) +
-                    (int) ($nilai['uas'] ?? 0)
-                ) / 3
+                    ($nilai['tugas'] * 0.20) +
+                    ($nilai['uh'] * 0.25) +
+                    ($nilai['mid'] * 0.25) +
+                    ($nilai['uas'] * 0.20) +
+                    ($nilaiAbsen * 0.10)
+                )
             );
 
-            Score::updateOrCreate(
+            $totalPertemuan = AttendanceStudent::where('student_id', $student->id)
+                ->count();
 
-                [
-                    'student_id' => $student->id,
-                    'mata_pelajaran' => $this->mata_pelajaran,
-                ],
+            $totalHadir = AttendanceStudent::where('student_id', $student->id)
+                ->where('status', 'Hadir')
+                ->count();
 
-                [
-                    'rombel' => $student->rombel,
+            $nilaiAbsen = $totalPertemuan > 0
+                ? round(($totalHadir / $totalPertemuan) * 100)
+                : 0;
 
-                    'nilai_tugas' => (int) ($nilai['tugas'] ?? 0),
-
-                    'nilai_uh' => (int) ($nilai['uh'] ?? 0),
-
-                    'nilai_mid' => (int) ($nilai['mid'] ?? 0),
-
-                    'nilai_uas' => (int) ($nilai['uas'] ?? 0),
-
-                    'rata_rata' => $rataRata,
-
-                    'nilai_akhir' => $nilaiAkhir,
-                ]
+            $nilaiAkhir = round(
+                (
+                    ($nilai['tugas'] * 0.20) +
+                    ($nilai['uh'] * 0.25) +
+                    ($nilai['mid'] * 0.25) +
+                    ($nilai['uas'] * 0.20) +
+                    ($nilaiAbsen * 0.10)
+                )
             );
         }
 
@@ -201,6 +201,9 @@ new class extends Component
                     <th class="px-5 py-4 text-left">
                         Rata-rata
                     </th>
+                    <th class="px-4 py-3 text-left">
+                        Absen
+                    </th>
 
                     <th class="px-5 py-4 text-left">
                         Nilai Akhir
@@ -230,12 +233,30 @@ new class extends Component
                 ) / 2
                 );
 
+                $totalPertemuan = \App\Models\AttendanceStudent::where(
+                'student_id',
+                $student->id
+                )->count();
+
+                $totalHadir = \App\Models\AttendanceStudent::where(
+                'student_id',
+                $student->id
+                )
+                ->where('status', 'Hadir')
+                ->count();
+
+                $nilaiAbsen = $totalPertemuan > 0
+                ? round(($totalHadir / $totalPertemuan) * 100)
+                : 0;
+
                 $akhir = round(
                 (
-                $rata +
-                (int) ($nilai['mid'] ?? 0) +
-                (int) ($nilai['uas'] ?? 0)
-                ) / 3
+                ((int) $nilai['tugas'] * 0.20) +
+                ((int) $nilai['uh'] * 0.25) +
+                ((int) $nilai['mid'] * 0.25) +
+                ((int) $nilai['uas'] * 0.20) +
+                ($nilaiAbsen * 0.10)
+                )
                 );
 
                 @endphp
@@ -294,7 +315,9 @@ new class extends Component
                     <td class="px-5 py-4 text-yellow-400 font-semibold">
                         {{ $rata }}
                     </td>
-
+                    <td class="px-4 py-3 text-white">
+                        {{ $nilaiAbsen }}%
+                    </td>
                     {{-- Nilai Akhir --}}
                     <td class="px-5 py-4 text-green-400 font-bold">
                         {{ $akhir }}
