@@ -65,24 +65,39 @@ new class extends Component {
             return;
         }
 
-        [$year, $month] = explode('-', $this->selectedMonthYear);
+        $isAll = $this->selectedMonthYear === 'all';
 
-        $records = Attendance::with(['students.student'])
-            ->where('rombel', $this->selectedRombel)
-            ->whereYear('tanggal', $year)
-            ->whereMonth('tanggal', $month)
+        $year = null;
+        $month = null;
+
+        if (! $isAll) {
+            [$year, $month] = explode('-', $this->selectedMonthYear);
+        }
+
+        $query = Attendance::with(['students.student'])
+            ->where('rombel', $this->selectedRombel);
+
+        if (! $isAll) {
+            $query->whereYear('tanggal', $year)
+                ->whereMonth('tanggal', $month);
+        }
+
+        $records = $query
             ->orderBy('tanggal', 'desc')
             ->get();
 
         $this->records = $records->toArray();
+
         $this->statusSummary = AttendanceStudent::selectRaw('status, count(*) as total')
-            ->whereHas(
-                'attendance',
-                fn($query) => $query
-                    ->where('rombel', $this->selectedRombel)
-                    ->whereYear('tanggal', $year)
-                    ->whereMonth('tanggal', $month)
-            )
+            ->whereHas('attendance', function ($query) use ($isAll, $year, $month) {
+
+                $query->where('rombel', $this->selectedRombel);
+
+                if (! $isAll) {
+                    $query->whereYear('tanggal', $year)
+                        ->whereMonth('tanggal', $month);
+                }
+            })
             ->groupBy('status')
             ->pluck('total', 'status')
             ->toArray();
@@ -139,7 +154,7 @@ new class extends Component {
         </div>
     </div>
 
-    <div class="grid gap-6 lg:grid-cols-3 mb-8">
+    <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-1">
 
         {{-- Filter Card --}}
         <div class="lg:col-span-2 rounded-2xl border border-zinc-800 bg-zinc-950 p-5">
@@ -182,13 +197,16 @@ new class extends Component {
                     <label class="mb-2 block text-sm font-medium text-zinc-300">
                         Bulan
                     </label>
-
                     <select
                         wire:model="selectedMonthYear"
                         wire:change="loadRecords"
                         class="w-full rounded-xl border border-zinc-700 bg-zinc-900 px-4 py-3 text-white transition focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20">
 
                         <option value="">Pilih Bulan</option>
+
+                        <option value="all">
+                            Semua Pertemuan
+                        </option>
 
                         @foreach ($monthOptions as $monthOption)
                         <option value="{{ $monthOption }}">
@@ -260,10 +278,28 @@ new class extends Component {
                     </div>
                 </div>
             </div>
+            {{-- Sakit --}}
+            <div class="rounded-2xl border border-zinc-800 bg-gradient-to-br from-zinc-900 to-zinc-950 p-5 shadow-lg">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm text-zinc-400">
+                            Sakit
+                        </p>
+
+                        <h3 class="mt-2 text-3xl font-bold text-yellow-400">
+                            {{ $statusSummary['Sakit'] ?? 0 }}
+                        </h3>
+                    </div>
+
+                    <div class="rounded-xl bg-yellow-500/10 p-3 text-yellow-400">
+                        🤒
+                    </div>
+                </div>
+            </div>
 
         </div>
     </div>
-
+    <br>
     <div class="overflow-x-auto rounded-xl border border-zinc-800">
         <table class="min-w-full">
             <thead class="bg-zinc-800 text-zinc-300">
@@ -319,7 +355,9 @@ new class extends Component {
                 <p class="text-zinc-400">Rekap kehadiran siswa untuk bulan yang dipilih.</p>
             </div>
         </div>
-
+        @php
+        $isAllRekap = $selectedMonthYear === 'all';
+        @endphp
         <div class="overflow-x-auto rounded-xl border border-zinc-800">
             <table class="min-w-full">
                 <thead class="bg-zinc-800 text-zinc-300">
@@ -331,9 +369,11 @@ new class extends Component {
                         <th class="px-5 py-4 text-left text-sm font-semibold">Izin</th>
                         <th class="px-5 py-4 text-left text-sm font-semibold">Sakit</th>
                         <th class="px-5 py-4 text-left text-sm font-semibold">Alpha</th>
+                        @if ($isAllRekap)
                         <th class="px-5 py-4 text-left text-sm font-semibold">
                             Nilai Kehadiran
                         </th>
+                        @endif
                     </tr>
                 </thead>
 
@@ -395,19 +435,13 @@ new class extends Component {
                             {{ $summary['alpha'] }}
                         </td>
 
+                        @if ($isAllRekap)
                         <td class="px-5 py-4">
-                            <span class="
-                                px-3 py-1 rounded-full text-sm font-semibold
-
-                                {{ $nilaiKehadiran >= 90 ? 'bg-green-500/20 text-green-400' : '' }}
-
-                                {{ $nilaiKehadiran >= 75 && $nilaiKehadiran < 90 ? 'bg-yellow-500/20 text-yellow-400' : '' }}
-
-                                {{ $nilaiKehadiran < 75 ? 'bg-red-500/20 text-red-400' : '' }}
-                            ">
+                            <span class="px-3 py-1 rounded-full text-sm font-semibold {{ $nilaiKehadiran >= 90 ? 'bg-green-500/20 text-green-400' : '' }} {{ $nilaiKehadiran >= 75 && $nilaiKehadiran < 90 ? 'bg-yellow-500/20 text-yellow-400' : '' }} {{ $nilaiKehadiran < 75 ? 'bg-red-500/20 text-red-400' : '' }}">
                                 {{ $nilaiKehadiran }}%
                             </span>
                         </td>
+                        @endif
                     </tr>
                     @endforeach
                     @endif
