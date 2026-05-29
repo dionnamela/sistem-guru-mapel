@@ -14,4 +14,9 @@ class Students extends Model
         'rombel',
         'jenis_kelamin',
     ];
+
+    public function scores()
+    {
+        return $this->hasMany(Score::class);
+    }
 }
