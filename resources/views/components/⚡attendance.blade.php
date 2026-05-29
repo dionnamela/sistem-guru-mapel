@@ -5,22 +5,13 @@ use Livewire\Component;
 use App\Models\Attendance;
 use App\Models\AttendanceStudent;
 use App\Models\Students;
+use App\Models\Rombel;
 use Carbon\Carbon;
 
 new class extends Component {
     public $students = [];
     public string $selectedRombel = '';
-    public array $rombelOptions = [
-        '7 Efesus',
-        '7 Kolose',
-        '7 Filipi',
-        '8 Filemon',
-        '8 Smirna',
-        '8 Roma',
-        '9 Tesalonika',
-        '9 Korintus',
-        '9 Tiatira',
-    ];
+    public $rombelOptions = [];
     public string $teacher_name = '';
     public string $tanggal = '';
     public array $attendance = [];
@@ -36,23 +27,19 @@ new class extends Component {
     public function mount(): void
     {
         $this->tanggal = Carbon::now()->format('Y-m-d');
-        $this->teacher_name = auth()->user() ? auth()->user()->name : '';
+
+        $this->teacher_name = auth()->user()
+            ? auth()->user()->name
+            : '';
+
+        $this->loadRombelOptions();
     }
 
     private function loadRombelOptions(): void
     {
-        // This method is kept for compatibility but the list is fixed.
-        $this->rombelOptions = [
-            '7 Efesus',
-            '7 Kolose',
-            '7 Filipi',
-            '8 Filemon',
-            '8 Smirna',
-            '8 Roma',
-            '9 Tesalonika',
-            '9 Korintus',
-            '9 Tiatira',
-        ];
+        $this->rombelOptions = Rombel::orderBy('nama')
+            ->pluck('nama')
+            ->toArray();
     }
 
     public function updatedSelectedRombel(): void
